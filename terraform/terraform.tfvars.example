@@ -1,0 +1,46 @@
+# ============================================
+# CONFIGURAÇÕES AWS
+# ============================================
+aws_region   = "us-east-1"
+project_name = "chat-admc"
+environment  = "prod"
+
+# ============================================
+# CONFIGURAÇÕES META
+# ============================================
+
+# Token de verificação - Crie um token seguro (ex: use o comando abaixo no terminal)
+# openssl rand -hex 32
+meta_verify_token = "SEU_TOKEN_DE_VERIFICACAO_AQUI"
+
+# App Secret do seu aplicativo Meta
+# Encontrado em: Meta Developers > Seu App > Settings > Basic > App Secret
+meta_app_secret = "SEU_APP_SECRET_DO_META_AQUI"
+
+# WhatsApp Phone Number ID
+# Encontrado em: Meta Developers > Seu App > WhatsApp > API Setup
+whatsapp_phone_id = "SEU_WHATSAPP_PHONE_NUMBER_ID_AQUI"
+
+# Instagram Business Account ID
+# Encontrado em: Meta Developers > Seu App > Instagram > API Setup
+instagram_account_id = "SEU_INSTAGRAM_ACCOUNT_ID_AQUI"
+
+# Facebook Page ID
+# Encontrado em: Sua Página do Facebook > About > Page ID
+facebook_page_id = "SEU_FACEBOOK_PAGE_ID_AQUI"
+
+# Token de Acesso Permanente do Meta
+# Siga as instruções para gerar um token de longa duração:
+# https://developers.facebook.com/docs/facebook-login/guides/access-tokens/get-long-lived
+meta_access_token = "SEU_META_ACCESS_TOKEN_PERMANENTE_AQUI"
+
+# ============================================
+# TAGS
+# ============================================
+tags = {
+  Project     = "ChatADMC"
+  Environment = "Production"
+  ManagedBy   = "Terraform"
+  Church      = "ADMC"
+  Purpose     = "Multi-channel chatbot"
+}
