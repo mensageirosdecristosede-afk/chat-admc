@@ -11,6 +11,7 @@ import hashlib
 import hmac
 from datetime import datetime
 from typing import Dict, Any, Optional
+import requests
 
 # Configuração de logging
 logger = logging.getLogger()
@@ -18,7 +19,6 @@ logger.setLevel(logging.INFO)
 
 # Clientes AWS
 s3_client = boto3.client('s3')
-bedrock_runtime = boto3.client('bedrock-runtime', region_name=os.environ.get('AWS_REGION', 'us-east-1'))
 ssm_client = boto3.client('ssm')
 
 # Variáveis de ambiente
@@ -27,6 +27,7 @@ META_VERIFY_TOKEN = os.environ.get('META_VERIFY_TOKEN')
 META_APP_SECRET = os.environ.get('META_APP_SECRET')
 WHATSAPP_PHONE_ID = os.environ.get('WHATSAPP_PHONE_ID')
 META_ACCESS_TOKEN = os.environ.get('META_ACCESS_TOKEN')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 
 def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
@@ -192,14 +193,14 @@ def process_message(message: Dict[str, Any], value: Dict[str, Any], platform: st
 
 def generate_ai_response(user_message: str, user_id: str) -> str:
     """
-    Gera resposta usando Amazon Bedrock com Claude 3
+    Gera resposta usando Google Gemini API (GRATUITO - 1500 req/dia)
     """
     try:
         # Carregar contexto da igreja do S3
         church_context = load_church_context()
         
         # Prompt para o modelo
-        system_prompt = f"""Você é um assistente virtual da Igreja ADMC (Assembleia de Deus Ministério Caná).
+        full_prompt = f"""Você é um assistente virtual da Igreja ADMC (Assembleia de Deus Ministério Caná).
 Seu papel é ajudar as pessoas com informações sobre a igreja de forma educada, acolhedora e prestativa.
 
 Contexto da Igreja:
@@ -211,37 +212,45 @@ Diretrizes:
 - Se não souber algo, seja honesto e ofereça contato humano
 - Mantenha respostas concisas (máximo 300 palavras)
 - Inclua versículos bíblicos quando apropriado
-- Convide as pessoas para conhecer a igreja"""
+- Convide as pessoas para conhecer a igreja
 
-        # Preparar payload para Bedrock
-        payload = {
-            "anthropic_version": "bedrock-2023-05-31",
-            "max_tokens": 500,
-            "temperature": 0.7,
-            "system": system_prompt,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": user_message
-                }
-            ]
+Pergunta do usuário: {user_message}
+
+Resposta:"""
+
+        # Chamar Google Gemini API
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_API_KEY}"
+        
+        headers = {
+            "Content-Type": "application/json"
         }
         
-        # Chamar Bedrock
-        response = bedrock_runtime.invoke_model(
-            modelId='anthropic.claude-3-haiku-20240307-v1:0',  # Modelo mais econômico
-            body=json.dumps(payload)
-        )
+        payload = {
+            "contents": [{
+                "parts": [{
+                    "text": full_prompt
+                }]
+            }],
+            "generationConfig": {
+                "temperature": 0.7,
+                "topK": 40,
+                "topP": 0.95,
+                "maxOutputTokens": 500,
+            }
+        }
+        
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
+        response.raise_for_status()
         
         # Processar resposta
-        response_body = json.loads(response['body'].read())
-        ai_response = response_body.get('content', [{}])[0].get('text', '')
+        result = response.json()
+        ai_response = result['candidates'][0]['content']['parts'][0]['text']
         
-        logger.info(f"Resposta gerada para {user_id}: {ai_response[:100]}...")
-        return ai_response
+        logger.info(f"Resposta Gemini gerada para {user_id}: {ai_response[:100]}...")
+        return ai_response.strip()
     
     except Exception as e:
-        logger.error(f"Erro ao gerar resposta com IA: {str(e)}", exc_info=True)
+        logger.error(f"Erro ao gerar resposta com Gemini: {str(e)}", exc_info=True)
         # Resposta fallback
         return """Olá! Seja bem-vindo(a) à Igreja ADMC! 🙏
 

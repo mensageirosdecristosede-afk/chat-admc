@@ -51,6 +51,13 @@ variable "meta_access_token" {
   sensitive   = true
 }
 
+# Configurações Google Gemini (IA Gratuita)
+variable "gemini_api_key" {
+  description = "API Key do Google Gemini (gratuito - 1500 req/dia)"
+  type        = string
+  sensitive   = true
+}
+
 # Tags
 variable "tags" {
   description = "Tags para aplicar em todos os recursos"

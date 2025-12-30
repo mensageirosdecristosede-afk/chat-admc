@@ -38,6 +38,7 @@ resource "aws_lambda_function" "webhook_handler" {
       META_APP_SECRET     = var.meta_app_secret
       WHATSAPP_PHONE_ID   = var.whatsapp_phone_id
       META_ACCESS_TOKEN   = var.meta_access_token
+      GEMINI_API_KEY      = var.gemini_api_key
       AWS_REGION          = var.aws_region
     }
   }

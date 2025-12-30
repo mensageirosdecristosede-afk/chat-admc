@@ -22,7 +22,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
-# Policy customizada para S3 e Bedrock
+# Policy customizada para S3 (Bedrock removido - usando Gemini gratuito)
 resource "aws_iam_role_policy" "lambda_policy" {
   name = "${var.project_name}-lambda-policy"
   role = aws_iam_role.lambda_role.id
@@ -40,17 +40,6 @@ resource "aws_iam_role_policy" "lambda_policy" {
         Resource = [
           aws_s3_bucket.chat_bucket.arn,
           "${aws_s3_bucket.chat_bucket.arn}/*"
-        ]
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "bedrock:InvokeModel",
-          "bedrock:InvokeModelWithResponseStream"
-        ]
-        Resource = [
-          "arn:aws:bedrock:${var.aws_region}::foundation-model/anthropic.claude-3-haiku-20240307-v1:0",
-          "arn:aws:bedrock:${var.aws_region}::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0"
         ]
       },
       {
@@ -98,5 +87,16 @@ resource "aws_ssm_parameter" "meta_access_token" {
 
   tags = {
     Name = "${var.project_name}-meta-access-token"
+  }
+}
+
+resource "aws_ssm_parameter" "gemini_api_key" {
+  name        = "/${var.project_name}/gemini/api-key"
+  description = "API Key do Google Gemini"
+  type        = "SecureString"
+  value       = var.gemini_api_key
+
+  tags = {
+    Name = "${var.project_name}-gemini-api-key"
   }
 }

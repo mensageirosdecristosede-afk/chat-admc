@@ -9,7 +9,7 @@ A solução utiliza infraestrutura serverless na AWS (Free Tier) com integraçã
 - **AWS Lambda**: Processamento de mensagens e lógica de IA
 - **Amazon API Gateway**: Endpoint para webhooks do Meta
 - **Amazon S3**: Armazenamento de conversas e dados de treinamento
-- **Amazon Bedrock**: IA generativa para respostas humanizadas (Claude 3)
+- **Google Gemini API**: IA generativa **100% GRATUITA** (1500 req/dia)
 - **Meta Business API**: Integração com WhatsApp, Instagram e Facebook
 
 ## 📋 Pré-requisitos
@@ -113,6 +113,23 @@ Anote a URL do webhook que será exibida no output.
 
 Envie uma mensagem de teste pelo WhatsApp, Instagram ou Facebook para o número/conta da igreja.
 
+## 🤖 Configurar Google Gemini (IA Gratuita)
+
+### Obter API Key (5 minutos)
+
+1. Acesse [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. Faça login com sua conta Google
+3. Clique em **"Create API Key"**
+4. Copie a chave gerada
+
+### Adicionar ao terraform.tfvars
+
+```hcl
+gemini_api_key = "AIzaSyD-9tSRv3nJ8x7xKQZqLp4vW2xYzX_AbCd"
+```
+
+**Ver guia completo**: [docs/GEMINI_SETUP.md](docs/GEMINI_SETUP.md)
+
 ## 🤖 Treinamento da IA
 
 ### Upload de Documentos de Treinamento
@@ -157,9 +174,9 @@ Acesse o CloudWatch Dashboard:
 - **Lambda**: 1M requisições/mês grátis
 - **API Gateway**: 1M requisições/mês grátis
 - **S3**: 5GB armazenamento grátis
-- **Bedrock**: Verificar pricing (não tem free tier permanente, mas tem trial)
+- **Google Gemini**: **100% GRÁTIS** (1500 req/dia)
 
-**Estimativa mensal**: $0 - $5 (dependendo do volume)
+**Estimativa mensal**: **$0.00** ✨ **(100% GRATUITO!)** 🎉
 
 ## 🔒 Segurança
 
@@ -186,7 +203,7 @@ python -c "from webhook_handler import lambda_handler; print(lambda_handler({}, 
 
 - [Meta Webhooks Documentation](https://developers.facebook.com/docs/graph-api/webhooks/)
 - [WhatsApp Business API](https://developers.facebook.com/docs/whatsapp)
-- [AWS Bedrock Documentation](https://docs.aws.amazon.com/bedrock/)
+- [Google Gemini API](https://ai.google.dev/docs)
 - [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 
 ## 🤝 Contribuindo

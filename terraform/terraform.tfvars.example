@@ -35,6 +35,17 @@ facebook_page_id = "SEU_FACEBOOK_PAGE_ID_AQUI"
 meta_access_token = "SEU_META_ACCESS_TOKEN_PERMANENTE_AQUI"
 
 # ============================================
+# CONFIGURAÇÕES GOOGLE GEMINI (IA GRATUITA)
+# ============================================
+
+# API Key do Google Gemini (100% GRATUITO - 1500 requisições/dia)
+# Como obter:
+# 1. Acesse: https://makersuite.google.com/app/apikey
+# 2. Clique em "Create API Key"
+# 3. Copie a chave gerada
+gemini_api_key = "SUA_GEMINI_API_KEY_AQUI"
+
+# ============================================
 # TAGS
 # ============================================
 tags = {
