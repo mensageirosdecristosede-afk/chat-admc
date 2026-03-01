@@ -1,7 +1,7 @@
 resource "google_secret_manager_secret" "gemini_api_key" {
   secret_id = var.gemini_secret_name
   replication {
-    automatic = true
+    automatic {}
   }
 }
 resource "google_secret_manager_secret_iam_member" "access" {
