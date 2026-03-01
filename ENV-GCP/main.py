@@ -16,12 +16,13 @@ _RETRY_BACKOFF = 2
 
 # Meta / WhatsApp env vars (can be direct values or secret names)
 META_VERIFY_TOKEN = os.environ.get("META_VERIFY_TOKEN")
-META_APP_SECRET = os.environ.get("META_APP_SECRET")
+# META_APP_SECRET will be loaded from Secret Manager
 
 # Secret Manager client and cache
 _secret_client = None
 _GEMINI_API_KEY = None
 _WHATSAPP_TOKEN = None
+_META_APP_SECRET = None
 
 
 def _get_secret_client():
@@ -78,6 +79,14 @@ def _ensure_whatsapp_token() -> str:
     return _WHATSAPP_TOKEN
 
 
+def _ensure_app_secret() -> str:
+    global _META_APP_SECRET
+    if _META_APP_SECRET:
+        return _META_APP_SECRET
+    _META_APP_SECRET = _get_secret_or_env("META_APP_SECRET", "META_APP_SECRET")
+    return _META_APP_SECRET
+
+
 def _sanitize_input(text: str, max_len: int = 1000) -> str:
     if not text:
         return ""
@@ -91,7 +100,8 @@ def _sanitize_input(text: str, max_len: int = 1000) -> str:
 
 def _verify_signature(request) -> bool:
     """Verify X-Hub-Signature-256 header using META_APP_SECRET."""
-    if not META_APP_SECRET:
+    app_secret = _ensure_app_secret()
+    if not app_secret:
         return False
     signature = request.headers.get("X-Hub-Signature-256")
     if not signature:
@@ -104,7 +114,7 @@ def _verify_signature(request) -> bool:
         if algo.lower() != "sha256":
             return False
         body = request.get_data() or b""
-        mac = hmac.new(META_APP_SECRET.encode("utf-8"), msg=body, digestmod=hashlib.sha256)
+        mac = hmac.new(app_secret.encode("utf-8"), msg=body, digestmod=hashlib.sha256)
         expected = mac.hexdigest()
         return hmac.compare_digest(expected, sig_hash)
     except Exception:
@@ -163,7 +173,8 @@ def main(request):
     # POST: incoming webhook
     if request.method == "POST":
         # Verify signature if app secret is set
-        if META_APP_SECRET and not _verify_signature(request):
+        app_secret = _ensure_app_secret()
+        if app_secret and not _verify_signature(request):
             return "Invalid signature", 403
 
         payload = request.get_json(silent=True) or {}
