@@ -103,3 +103,25 @@ terraform apply --auto-approve
 ```
 
 Observação: a função lê o nome do secret via `GEMINI_SECRET_NAME` e acessa o valor em runtime pelo Secret Manager; não é necessário inserir a chave diretamente como env var.
+
+## Script seguro para adicionar versão do secret
+
+Há um script pronto para facilitar a adição da versão do secret de forma segura, sem deixar o valor sensível no `terraform.tfstate`:
+
+- `ENV-GCP/scripts/create_secret_version.sh`
+
+Uso recomendado (interativo, valor inserido oculto):
+
+```bash
+cd ENV-GCP
+./scripts/create_secret_version.sh --project MY_PROJECT --secret GEMINI_API_KEY --service-account chat-bot-admc@MY_PROJECT.iam.gserviceaccount.com
+```
+
+Ou passando o valor via variável de ambiente (menos interativo):
+
+```bash
+SECRET_VALUE="MY_KEY" ./scripts/create_secret_version.sh --project MY_PROJECT --secret GEMINI_API_KEY
+```
+
+O script verifica se o secret existe, cria se necessário, adiciona a versão contendo o valor sensível e pode aplicar o binding IAM para a service account.
+
