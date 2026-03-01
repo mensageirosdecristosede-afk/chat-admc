@@ -51,3 +51,16 @@ Outros itens importantes:
 - Documentar processo de rotação de credenciais e adição de novos colaboradores.
 
 Se quiser, eu atualizo este `README.md` com instruções mais detalhadas de deploy (com comandos) ou adiciono READMEs por pasta.
+ 
+**Links úteis**
+
+- Documentação do projeto: [docs/](docs/)
+- README ambiente AWS: [ENV-AWS/README.md](ENV-AWS/README.md)
+- README ambiente GCP: [ENV-GCP/README.md](ENV-GCP/README.md)
+
+**Diferenças que levaram à opção GCP vs AWS (resumo de custo e motivo)**
+
+- **Custo da IA**: o uso planejado de modelos generativos influenciou a decisão. O Google Gemini tem camadas gratuitas e créditos que facilitam experimentação com custo reduzido em fases iniciais. O AWS Bedrock (ou serviços equivalentes pagos) normalmente não oferece um free tier comparável para uso de modelos gerativos avançados — isso pode gerar custos imediatos mais altos na AWS.
+- **Prototipagem e custos iniciais**: por oferecer acesso mais fácil/baixo custo inicial (Gemini), o GCP foi adicionado para prototipagem e validação do componente de IA sem incorrer em gasto alto durante testes.
+- **Produção e requisitos**: a AWS permanece como opção robusta para produção (integração com IAM, Lambda, API Gateway, etc.) onde traz vantagens em integração com outros recursos já existentes; porém para workloads que dependem fortemente de inferência de modelos, os custos operacionais devem ser avaliados comparando Gemini vs Bedrock.
+- **Recomendação prática**: usar GCP/Gemini para experimentação e validação do modelo, e avaliar migração ou integração híbrida conforme volume e requisitos de latência/custo. Sempre estimar custos de inferência antes de migrar para produção.
