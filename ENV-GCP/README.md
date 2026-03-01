@@ -52,3 +52,76 @@ Usuário → Cloud Function (HTTP) → Cloud Storage
 ---
 
 **Qualquer dúvida ou erro, envie o log para análise!**
+
+
+## Configurar `GEMINI_API_KEY` no Secret Manager (recomendado)
+
+Siga estes passos para criar o secret com a chave da API Gemini e conceder acesso à service account usada pela Cloud Function.
+
+1. Defina o projeto GCP (substitua `MY_PROJECT`):
+
+```bash
+gcloud config set project MY_PROJECT
+```
+
+
+2. Crie o recurso do Secret Manager via Terraform (o `secret` será criado sem versão) e depois adicione a versão com o valor sensível usando `gcloud`:
+
+```bash
+# cria apenas o recurso secret (sem versão) via Terraform
+cd ENV-GCP
+terraform init
+terraform apply -var="project_id=MY_PROJECT" -var="bucket_name=MY_BUCKET" --auto-approve
+
+# adicione a versão contendo o valor sensível (substitua YOUR_GEMINI_KEY)
+printf '%s' "YOUR_GEMINI_KEY" | gcloud secrets versions add GEMINI_API_KEY --data-file=-
+```
+
+3. Conceda à service account da Cloud Function permissão para acessar o secret (substitua `SERVICE_ACCOUNT_EMAIL`):
+
+```bash
+gcloud secrets add-iam-policy-binding GEMINI_API_KEY \
+  --member="serviceAccount:SERVICE_ACCOUNT_EMAIL" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+Exemplo (para a service account declarada no `cloudfunction.tf`):
+
+```bash
+gcloud secrets add-iam-policy-binding GEMINI_API_KEY \
+  --member="serviceAccount:chat-bot-admc@MY_PROJECT.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+4. Depois de criar o secret e configurar IAM, faça o deploy (o `cloudfunction.tf` já define `GEMINI_SECRET_NAME="GEMINI_API_KEY"` como variável de ambiente):
+
+```bash
+cd ENV-GCP
+zip -r function-source.zip main.py requirements.txt church-context-gemini.txt
+terraform init
+terraform apply --auto-approve
+```
+
+Observação: a função lê o nome do secret via `GEMINI_SECRET_NAME` e acessa o valor em runtime pelo Secret Manager; não é necessário inserir a chave diretamente como env var.
+
+## Script seguro para adicionar versão do secret
+
+Há um script pronto para facilitar a adição da versão do secret de forma segura, sem deixar o valor sensível no `terraform.tfstate`:
+
+- `ENV-GCP/scripts/create_secret_version.sh`
+
+Uso recomendado (interativo, valor inserido oculto):
+
+```bash
+cd ENV-GCP
+./scripts/create_secret_version.sh --project MY_PROJECT --secret GEMINI_API_KEY --service-account chat-bot-admc@MY_PROJECT.iam.gserviceaccount.com
+```
+
+Ou passando o valor via variável de ambiente (menos interativo):
+
+```bash
+SECRET_VALUE="MY_KEY" ./scripts/create_secret_version.sh --project MY_PROJECT --secret GEMINI_API_KEY
+```
+
+O script verifica se o secret existe, cria se necessário, adiciona a versão contendo o valor sensível e pode aplicar o binding IAM para a service account.
+

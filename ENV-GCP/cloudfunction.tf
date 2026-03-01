@@ -13,8 +13,9 @@ resource "google_cloudfunctions_function" "main" {
   timeout              = 60
   environment_variables = {
     BUCKET_NAME = var.bucket_name
+    GEMINI_SECRET_NAME = var.gemini_secret_name
   }
-  service_account_email = "chat-bot-admc@appspot.gserviceaccount.com"
+  service_account_email = var.function_service_account_email
 }
 
 resource "google_storage_bucket_object" "function_zip" {
