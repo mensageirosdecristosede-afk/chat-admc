@@ -64,10 +64,16 @@ Siga estes passos para criar o secret com a chave da API Gemini e conceder acess
 gcloud config set project MY_PROJECT
 ```
 
-2. Crie o Secret Manager e adicione a chave (substitua `YOUR_GEMINI_KEY`):
+
+2. Crie o recurso do Secret Manager via Terraform (o `secret` será criado sem versão) e depois adicione a versão com o valor sensível usando `gcloud`:
 
 ```bash
-gcloud secrets create GEMINI_API_KEY --replication-policy="automatic"
+# cria apenas o recurso secret (sem versão) via Terraform
+cd ENV-GCP
+terraform init
+terraform apply -var="project_id=MY_PROJECT" -var="bucket_name=MY_BUCKET" --auto-approve
+
+# adicione a versão contendo o valor sensível (substitua YOUR_GEMINI_KEY)
 printf '%s' "YOUR_GEMINI_KEY" | gcloud secrets versions add GEMINI_API_KEY --data-file=-
 ```
 
