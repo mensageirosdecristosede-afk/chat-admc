@@ -52,3 +52,48 @@ Usuário → Cloud Function (HTTP) → Cloud Storage
 ---
 
 **Qualquer dúvida ou erro, envie o log para análise!**
+
+
+## Configurar `GEMINI_API_KEY` no Secret Manager (recomendado)
+
+Siga estes passos para criar o secret com a chave da API Gemini e conceder acesso à service account usada pela Cloud Function.
+
+1. Defina o projeto GCP (substitua `MY_PROJECT`):
+
+```bash
+gcloud config set project MY_PROJECT
+```
+
+2. Crie o Secret Manager e adicione a chave (substitua `YOUR_GEMINI_KEY`):
+
+```bash
+gcloud secrets create GEMINI_API_KEY --replication-policy="automatic"
+printf '%s' "YOUR_GEMINI_KEY" | gcloud secrets versions add GEMINI_API_KEY --data-file=-
+```
+
+3. Conceda à service account da Cloud Function permissão para acessar o secret (substitua `SERVICE_ACCOUNT_EMAIL`):
+
+```bash
+gcloud secrets add-iam-policy-binding GEMINI_API_KEY \
+  --member="serviceAccount:SERVICE_ACCOUNT_EMAIL" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+Exemplo (para a service account declarada no `cloudfunction.tf`):
+
+```bash
+gcloud secrets add-iam-policy-binding GEMINI_API_KEY \
+  --member="serviceAccount:chat-bot-admc@MY_PROJECT.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+4. Depois de criar o secret e configurar IAM, faça o deploy (o `cloudfunction.tf` já define `GEMINI_SECRET_NAME="GEMINI_API_KEY"` como variável de ambiente):
+
+```bash
+cd ENV-GCP
+zip -r function-source.zip main.py requirements.txt church-context-gemini.txt
+terraform init
+terraform apply --auto-approve
+```
+
+Observação: a função lê o nome do secret via `GEMINI_SECRET_NAME` e acessa o valor em runtime pelo Secret Manager; não é necessário inserir a chave diretamente como env var.
