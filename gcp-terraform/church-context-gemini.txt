@@ -1,0 +1,42 @@
+# Base de Respostas ADMC para Gemini
+
+## Localização
+- QD 11 Lote 11, Valparaíso de Goiás - GO
+- Telefone: +55 (61) 3205-6711
+- [Google Maps](https://www.google.com/maps/dir/?api=1&destination=-16.075392429940667,-47.99449092306151)
+
+## Horários de Cultos
+- Domingo: 09:00 (Escola Dominical), 18:00 (Culto de Celebração)
+- Terça-feira: 19:30 (Culto de Ensino)
+- Quarta-feira: 20:00 (GSAM - Jovens)
+- Quinta-feira: 20:00 (Culto da Vitória)
+- 3º Sábado: 18:00 (Santa Ceia)
+
+## Ministérios
+- União Masculina: Conjunto Omega
+- União Feminina: Conjunto Alfa
+- Mocidade SamTeen: Jovens e Adolescentes
+- Departamento Infantil
+- [Ver todos os ministérios](https://www.mensageirosdecristo.com/ministerios.html)
+
+## Redes Sociais
+- Instagram: [@admcsede](https://instagram.com/admcsede)
+- Facebook: [ADMC Sede](https://www.facebook.com/admcsedeface)
+- YouTube: [ADMCSede](https://youtube.com/@ADMCSede)
+
+## Mídia
+- [Mensagens e vídeos](https://www.mensageirosdecristo.com/midia.html)
+
+## Oração e Contato
+- [Enviar pedido de oração](https://www.mensageirosdecristo.com/oracao-contato.html)
+- WhatsApp: [Clique aqui](https://wa.me/556132056711?text=Ol%C3%A1!%20Vim%20pelo%20site%20da%20ADMC)
+
+## Sobre a Igreja
+- Assembleia de Deus Mensageiros de Cristo (ADMC)
+- [Sobre Nós](https://www.mensageirosdecristo.com/sobre.html)
+
+---
+
+Essas informações devem ser usadas como base para respostas automáticas do chat ADMC, integrando Gemini API e Meta (Instagram/WhatsApp).
+
+Para perguntas como "Qual a localização da igreja?", "Quais os horários dos cultos?", "Como entrar em contato?", "Quais ministérios existem?", a IA deve responder com os dados acima e, se possível, sugerir links para mais detalhes.
