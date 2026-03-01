@@ -1,0 +1,19 @@
+labels:
+  - name: bug
+    color: d73a4a
+    description: Bug report
+  - name: enhancement
+    color: 0e8a16
+    description: New feature or request
+  - name: documentation
+    color: 0075ca
+    description: Documentation only changes
+  - name: chore
+    color: cfd3d7
+    description: Maintenance tasks
+  - name: security
+    color: b60205
+    description: Security issue
+  - name: release
+    color: 5319e7
+    description: Release / tagging
