@@ -6,8 +6,8 @@ import hmac
 import hashlib
 import requests
 import functions_framework
-from datetime import datetime
-from google.cloud import secretmanager
+from datetime import datetime, timedelta
+from google.cloud import secretmanager, firestore
 from google.api_core import exceptions as google_exceptions
 
 # Configuration
@@ -24,9 +24,38 @@ META_VERIFY_TOKEN = os.environ.get("META_VERIFY_TOKEN")
 
 # Secret Manager client and cache
 _secret_client = None
+_firestore_client = None
 _GEMINI_API_KEY = None
 _WHATSAPP_TOKEN = None
 _META_APP_SECRET = None
+
+
+def _get_firestore_client():
+    global _firestore_client
+    if _firestore_client is None:
+        _firestore_client = firestore.Client(project=_PROJECT_ID)
+    return _firestore_client
+
+
+def _save_attendance(from_number: str, user_msg: str, bot_reply: str, is_feedback: bool = False):
+    """Salva o atendimento no Firestore para relatório diário."""
+    try:
+        db = _get_firestore_client()
+        now = datetime.now()
+        today = now.strftime("%Y-%m-%d")
+        
+        doc_ref = db.collection("attendances").document()
+        doc_ref.set({
+            "date": today,
+            "timestamp": now,
+            "from_number": from_number,
+            "user_message": user_msg[:500],
+            "bot_reply": bot_reply[:500],
+            "is_feedback": is_feedback,
+            "reported": False
+        })
+    except Exception as e:
+        print(f"Erro ao salvar atendimento: {e}")
 
 
 def _get_secret_client():
@@ -175,13 +204,12 @@ def _is_feedback_message(text: str) -> bool:
     return any(kw in text_lower for kw in keywords)
 
 
-def _send_admin_report(phone_number_id: str, from_number: str, user_msg: str, bot_reply: str, is_feedback: bool = False):
-    """Envia relatório de atendimento para o administrador."""
+def _send_feedback_alert(phone_number_id: str, from_number: str, user_msg: str, bot_reply: str):
+    """Envia alerta de feedback/crítica em tempo real para o admin."""
     now = datetime.now().strftime("%d/%m/%Y %H:%M")
     
-    if is_feedback:
-        report = f"""⚠️ *FEEDBACK RECEBIDO*
-        
+    report = f"""⚠️ *FEEDBACK RECEBIDO*
+
 📅 {now}
 📱 De: {from_number}
 
@@ -190,14 +218,6 @@ def _send_admin_report(phone_number_id: str, from_number: str, user_msg: str, bo
 
 🤖 *Resposta da Sara:*
 {bot_reply[:500]}"""
-    else:
-        report = f"""📊 *Relatório de Atendimento*
-
-📅 {now}
-📱 Usuário: {from_number}
-
-💬 Pergunta: {user_msg[:200]}...
-🤖 Resposta: {bot_reply[:300]}..."""
     
     _send_whatsapp_message(phone_number_id, ADMIN_PHONE, report)
 
@@ -253,9 +273,87 @@ def main(request):
                         # Detectar se é feedback/crítica/sugestão
                         is_feedback = _is_feedback_message(user_message)
                         
-                        # Enviar relatório para admin (sempre para feedback, senão resumido)
-                        _send_admin_report(phone_number_id, from_number, user_message, reply, is_feedback)
+                        # Salvar atendimento para relatório diário
+                        _save_attendance(from_number, user_message, reply, is_feedback)
+                        
+                        # Enviar alerta imediato apenas para feedbacks/críticas
+                        if is_feedback:
+                            _send_feedback_alert(phone_number_id, from_number, user_message, reply)
 
         return "", 200
 
     return "Method not allowed", 405
+
+
+@functions_framework.http
+def send_daily_report(request):
+    """Função para enviar relatório diário consolidado. Chamada pelo Cloud Scheduler."""
+    try:
+        db = _get_firestore_client()
+        
+        # Buscar atendimentos de ontem (ou hoje se for fim do dia)
+        yesterday = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        today = datetime.now().strftime("%Y-%m-%d")
+        
+        # Buscar atendimentos não reportados
+        docs = db.collection("attendances").where("reported", "==", False).stream()
+        
+        attendances = []
+        feedback_count = 0
+        unique_users = set()
+        
+        for doc in docs:
+            data = doc.to_dict()
+            attendances.append({
+                "id": doc.id,
+                "from_number": data.get("from_number", ""),
+                "user_message": data.get("user_message", ""),
+                "is_feedback": data.get("is_feedback", False)
+            })
+            unique_users.add(data.get("from_number", ""))
+            if data.get("is_feedback"):
+                feedback_count += 1
+        
+        if not attendances:
+            return "Nenhum atendimento para reportar", 200
+        
+        # Montar relatório
+        now = datetime.now().strftime("%d/%m/%Y %H:%M")
+        report = f"""📊 *RELATÓRIO DIÁRIO - SARA ADMC*
+
+📅 Gerado em: {now}
+📱 Total de atendimentos: {len(attendances)}
+👥 Usuários únicos: {len(unique_users)}
+⚠️ Feedbacks/críticas: {feedback_count}
+
+---
+*Últimas interações:*\n"""
+        
+        # Adicionar até 10 últimas interações
+        for att in attendances[-10:]:
+            phone = att["from_number"][-4:] if len(att["from_number"]) > 4 else att["from_number"]
+            msg_preview = att["user_message"][:50]
+            feedback_flag = "⚠️" if att["is_feedback"] else ""
+            report += f"\n• ...{phone}: {msg_preview}... {feedback_flag}"
+        
+        if len(attendances) > 10:
+            report += f"\n\n_...e mais {len(attendances) - 10} atendimentos_"
+        
+        # Enviar relatório
+        # Precisamos de um phone_number_id válido - usar o da última mensagem ou fixo
+        token = _ensure_whatsapp_token()
+        if token:
+            url = "https://graph.facebook.com/v17.0/1051155144750870/messages"  # Phone number ID fixo
+            headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+            body = {"messaging_product": "whatsapp", "to": ADMIN_PHONE, "type": "text", "text": {"body": report}}
+            requests.post(url, headers=headers, json=body, timeout=10)
+        
+        # Marcar atendimentos como reportados
+        for att in attendances:
+            db.collection("attendances").document(att["id"]).update({"reported": True})
+        
+        return f"Relatório enviado com {len(attendances)} atendimentos", 200
+        
+    except Exception as e:
+        print(f"Erro ao gerar relatório: {e}")
+        return f"Erro: {e}", 500
