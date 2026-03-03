@@ -6,6 +6,7 @@ import hmac
 import hashlib
 import requests
 import functions_framework
+from datetime import datetime
 from google.cloud import secretmanager
 from google.api_core import exceptions as google_exceptions
 
@@ -13,6 +14,9 @@ from google.api_core import exceptions as google_exceptions
 _PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT") or os.environ.get("GCP_PROJECT")
 _MAX_RETRIES = 3
 _RETRY_BACKOFF = 2
+
+# Número do administrador para receber relatórios e críticas/sugestões
+ADMIN_PHONE = "5561985019958"
 
 # Meta / WhatsApp env vars (can be direct values or secret names)
 META_VERIFY_TOKEN = os.environ.get("META_VERIFY_TOKEN")
@@ -124,7 +128,7 @@ def _verify_signature(request) -> bool:
 def _call_gemini(prompt: str) -> str:
     _ensure_api_key()
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={_GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_GEMINI_API_KEY}"
     for attempt in range(1, _MAX_RETRIES + 1):
         try:
             resp = requests.post(url, json=payload, timeout=15)
@@ -157,6 +161,45 @@ def _send_whatsapp_message(phone_number_id: str, to_number: str, text: str) -> b
         return r.status_code in (200, 201)
     except requests.RequestException:
         return False
+
+
+def _is_feedback_message(text: str) -> bool:
+    """Detecta se a mensagem contém crítica, sugestão ou reclamação."""
+    keywords = [
+        "sugest", "critic", "reclam", "melhora", "poderia", "deveria",
+        "problema", "erro", "bug", "não funciona", "nao funciona",
+        "péssimo", "pessimo", "ruim", "horrível", "horrivel",
+        "feedback", "opinião", "opiniao", "avalia"
+    ]
+    text_lower = text.lower()
+    return any(kw in text_lower for kw in keywords)
+
+
+def _send_admin_report(phone_number_id: str, from_number: str, user_msg: str, bot_reply: str, is_feedback: bool = False):
+    """Envia relatório de atendimento para o administrador."""
+    now = datetime.now().strftime("%d/%m/%Y %H:%M")
+    
+    if is_feedback:
+        report = f"""⚠️ *FEEDBACK RECEBIDO*
+        
+📅 {now}
+📱 De: {from_number}
+
+💬 *Mensagem:*
+{user_msg}
+
+🤖 *Resposta da Sara:*
+{bot_reply[:500]}"""
+    else:
+        report = f"""📊 *Relatório de Atendimento*
+
+📅 {now}
+📱 Usuário: {from_number}
+
+💬 Pergunta: {user_msg[:200]}...
+🤖 Resposta: {bot_reply[:300]}..."""
+    
+    _send_whatsapp_message(phone_number_id, ADMIN_PHONE, report)
 
 
 @functions_framework.http
@@ -194,12 +237,24 @@ def main(request):
                     from_number = msg.get("from")
                     if not text or not from_number:
                         continue
+                    
+                    # Não processar mensagens do próprio admin (evita loop)
+                    if from_number == ADMIN_PHONE:
+                        continue
+                    
                     user_message = _sanitize_input(text, max_len=800)
                     prompt = f"Contexto da igreja:\n{CHURCH_CONTEXT}\n\nPergunta do usuário: {user_message}\nResposta detalhada:"
                     reply = _call_gemini(prompt)
+                    
                     # Send reply back via WhatsApp Cloud API
                     if phone_number_id:
                         _send_whatsapp_message(phone_number_id, from_number, reply)
+                        
+                        # Detectar se é feedback/crítica/sugestão
+                        is_feedback = _is_feedback_message(user_message)
+                        
+                        # Enviar relatório para admin (sempre para feedback, senão resumido)
+                        _send_admin_report(phone_number_id, from_number, user_message, reply, is_feedback)
 
         return "", 200
 

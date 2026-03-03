@@ -1,30 +1,44 @@
 # Status do Projeto Chat ADMC - WhatsApp + Gemini AI
 
-**Última atualização**: 01/03/2026
+**Última atualização**: 02/03/2026 22:27
+
+## 🎉 PROJETO FUNCIONANDO!
+
+O chatbot da ADMC está **100% operacional**!
+
+- **Número WhatsApp**: `+55 11 91181-1106` (ADMC-Virtual)
+- **Modelo IA**: Gemini 2.5 Flash
+- **Status**: ✅ Em produção
+
+---
 
 ## ✅ Concluído
 
 ### Infraestrutura GCP
-- [x] Cloud Function `chat-admc-handler` deployada
+- [x] Cloud Function `chat-admc-handler` deployada (v11)
   - URL: `https://us-central1-chat-bot-admc.cloudfunctions.net/chat-admc-handler`
   - Runtime: Python 3.10
   - Region: us-central1
 - [x] Service Account: `chat-admc-fn-sa@chat-bot-admc.iam.gserviceaccount.com`
   - Roles: logging.logWriter, storage.objectViewer, secretmanager.secretAccessor
+- [x] API Generative Language habilitada
 
 ### Secrets no Secret Manager
-- [x] `GEMINI_API_KEY` - Chave da API Gemini
-- [x] `WHATSAPP_TOKEN` - Token do System User do WhatsApp
-- [x] `META_APP_SECRET` - App Secret para validação de webhook
+- [x] `GEMINI_API_KEY` - Chave da API Gemini (v3 - criada no projeto GCP)
+- [x] `WHATSAPP_TOKEN` - Token do System User do WhatsApp (v3)
+- [x] `META_APP_SECRET` - App Secret para validação de webhook (v3)
 
-### Meta/WhatsApp Configuration
-- [x] App "Chat ADMC" criado (App ID: `1220182596657877`)
-- [x] System User `deploy-whatsapp` criado (ID: `122103726926815355`)
-- [x] Business Manager "ADMC" (ID: `1562859828288738`)
+### Meta/WhatsApp Configuration (Portfólio - ADMC Sede)
+- [x] App "Chat ADMC" criado (App ID: `1791477378904720`) - **PUBLICADO**
+- [x] System User `deploy-whatsapp` criado (ID: `61583639447019`)
+- [x] Business Portfolio: "ADMC Sede" (ID: `1034751007960249`)
+- [x] Verificação da empresa: ✅ Aprovada
+- [x] WABA de Produção criada (ID: `1625049158692690`)
+- [x] **Número de Produção**: `+55 11 91181-1106` (Phone ID: `1051155144750870`) - **CONECTADO**
 - [x] Webhook configurado e verificado
   - Callback URL: `https://us-central1-chat-bot-admc.cloudfunctions.net/chat-admc-handler`
   - Verify Token: `admc-verify-2026`
-- [x] WABAs atribuídas ao System User
+  - Assinaturas: `messages`, `message_template_status_update`
 
 ### Git/GitHub
 - [x] Repositório: `mensageirosdecristosede-afk/chat-admc`
@@ -33,29 +47,11 @@
 
 ---
 
-## ⏳ Em Andamento (Aguardando Meta)
+## 📱 Como Usar
 
-### Verificação do Business Manager
-- **Status**: `pending_submission` → Documentos enviados
-- **Documentos**: Cartão CNPJ + verificação de e-mail @mensageirosdecristo.com
-- **Previsão**: ~2 dias úteis para análise
-
-### Número WhatsApp Real
-- **Número novo**: `+55 11 98818-3880`
-- **Status**: Aguardando SMS de verificação + aprovação do Business Manager
+Qualquer pessoa pode enviar uma mensagem para **+55 11 91181-1106** no WhatsApp e receberá respostas automáticas sobre a igreja ADMC!
 
 ---
-
-## 📊 Status das WABAs
-
-| WABA | ID | Status | Números |
-|------|-----|--------|---------|
-| Test WhatsApp Business Account | `1515243402874226` | ✅ APPROVED | Número de teste: 15551791361 |
-| ADMC Sede | `1562677358407435` | ⏳ PENDING | Nenhum (aguardando verificação) |
-
----
-
-## 🔜 Próximos Passos (após aprovação da Meta)
 
 1. **Adicionar número real** (`+55 11 98818-3880`) à WABA "ADMC Sede"
 2. **Verificar número** via SMS
