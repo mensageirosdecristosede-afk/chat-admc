@@ -81,15 +81,16 @@ def _get_secret_or_env(secret_name: str, env_var: str) -> str:
             name = f"projects/{_PROJECT_ID}/secrets/{secret_name}/versions/latest"
             response = client.access_secret_version(request={"name": name})
             return response.payload.data.decode("UTF-8").strip()
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"Secret Manager access error for {secret_name}: {e}")
     
     # Fallback to env var
     return env_value or ""
 
 # Load church context
 try:
-    with open("church-context-gemini.txt", "r", encoding="utf-8") as f:
+    context_path = os.path.join(os.path.dirname(__file__), "church-context-gemini.txt")
+    with open(context_path, "r", encoding="utf-8") as f:
         CHURCH_CONTEXT = f.read()
 except FileNotFoundError:
     CHURCH_CONTEXT = ""
@@ -101,7 +102,7 @@ def _ensure_api_key() -> None:
         return
     _GEMINI_API_KEY = _get_secret_or_env("GEMINI_API_KEY", "GEMINI_API_KEY")
     if not _GEMINI_API_KEY:
-        raise RuntimeError("GEMINI_API_KEY not found in Secret Manager or env var")
+        print("Warning: GEMINI_API_KEY not found in Secret Manager or env var")
 
 
 def _ensure_whatsapp_token() -> str:
@@ -156,6 +157,9 @@ def _verify_signature(request) -> bool:
 
 def _call_gemini(prompt: str) -> str:
     _ensure_api_key()
+    if not _GEMINI_API_KEY:
+        return ("Eita, estou sem acesso ao serviço de IA no momento. "
+                "Tente novamente mais tarde ou ligue pra secretaria: (61) 3205-6711")
     payload = {"contents": [{"parts": [{"text": prompt}]}]}
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={_GEMINI_API_KEY}"
     for attempt in range(1, _MAX_RETRIES + 1):
@@ -181,14 +185,17 @@ def _call_gemini(prompt: str) -> str:
 def _send_whatsapp_message(phone_number_id: str, to_number: str, text: str) -> bool:
     token = _ensure_whatsapp_token()
     if not token:
+        print("WhatsApp token not found; cannot send message")
         return False
     url = f"https://graph.facebook.com/v17.0/{phone_number_id}/messages"
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
     body = {"messaging_product": "whatsapp", "to": to_number, "type": "text", "text": {"body": text}}
     try:
         r = requests.post(url, headers=headers, json=body, timeout=10)
+        print(f"WhatsApp send status: {r.status_code}, body: {r.text}")
         return r.status_code in (200, 201)
     except requests.RequestException:
+        print("Exception when sending WhatsApp message")
         return False
 
 

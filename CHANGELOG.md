@@ -4,6 +4,12 @@ Todas as mudanças neste repositório seguirão o padrão "Unreleased" → seman
 
 ## [Unreleased]
 
+### Changed (02/06/2026)
+- **Robustez do contexto da igreja**: leitura de `church-context-gemini.txt` agora usa caminho absoluto baseado no arquivo, evitando falhas por diretório de execução.
+- **Fallback amigável para indisponibilidade de IA**: quando `GEMINI_API_KEY` não está disponível, a Sara responde mensagem de indisponibilidade em vez de encerrar o fluxo com exceção.
+- **Observabilidade de secrets e envio WhatsApp**: logs explícitos para falha de acesso ao Secret Manager, ausência de token e status de envio na API da Meta.
+- **Resiliência operacional**: redução de falhas silenciosas em produção quando houver problema temporário de infraestrutura/segredos.
+
 ### Added (01/03/2026)
 - **Integração WhatsApp Cloud API**: Webhook handler completo em `ENV-GCP/main.py`
 - **Integração Gemini AI**: Chamadas à API Gemini com retries e contexto da igreja
