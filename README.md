@@ -2,6 +2,21 @@
 
 Resumo: este repositório contém o código e a infraestrutura para o chatbot/integrações do projeto "Igreja ADMC". O objetivo é manter código, scripts de deploy e documentação para ambientes AWS e GCP de forma organizada e auditável.
 
+## 🚀 Status Atual (01/03/2026)
+
+**Ambiente ativo**: GCP (Google Cloud Platform)
+
+| Componente | Status |
+|------------|--------|
+| Cloud Function | ✅ Deployed |
+| Webhook Meta | ✅ Configurado |
+| Gemini AI | ✅ Integrado |
+| WhatsApp Business | ⏳ Aguardando verificação (~2 dias) |
+
+👉 **Detalhes completos**: [ENV-GCP/STATUS.md](ENV-GCP/STATUS.md)
+
+---
+
 **Estrutura do repositório**
 
 - `docs/`: documentação, contexto do projeto, guias e arquivos de referência (treinamento de AI, arquitetura, custos, etc.).

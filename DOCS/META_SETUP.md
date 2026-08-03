@@ -27,24 +27,32 @@ Este guia fornece instruções passo a passo para configurar a integração com 
    - **Business Portfolio**: Selecione seu portfolio
 3. Clique em **"Create App"**
 
-### Passo 3: Adicionar Produtos
+### Passo 3: Configurar Casos de Uso (Interface 2025+)
 
-No dashboard do app, adicione os seguintes produtos:
+> **Nota**: A interface do Meta mudou em 2025. Agora usa "Casos de uso" em vez de "Produtos".
+
+No Painel do app, você verá **"Personalização do app e requisitos"** com vários casos de uso:
 
 #### WhatsApp
-1. Clique em **"Add Product"**
-2. Selecione **"WhatsApp"** > **"Set Up"**
-3. Configure o número de telefone da igreja
+1. Clique em **"Conectar-se com os clientes pelo WhatsApp"**
+2. Complete os requisitos solicitados
+3. Associe ou crie uma **WhatsApp Business Account (WABA)**
+4. Adicione e verifique o número de telefone da igreja
 
 #### Messenger
-1. Clique em **"Add Product"**
-2. Selecione **"Messenger"** > **"Set Up"**
+1. Clique em **"Interagir com os clientes no Messenger from Meta"**
+2. Complete os requisitos
 3. Conecte a página do Facebook
 
 #### Instagram
-1. Clique em **"Add Product"**
-2. Selecione **"Instagram"** > **"Set Up"**
+1. Clique em **"Gerenciar mensagens e conteúdo no Instagram"**
+2. Complete os requisitos
 3. Conecte a conta do Instagram
+
+### Passo 4: Verificação da Empresa
+1. Clique em **"Verificação da empresa"**
+2. Envie documentos (CNPJ, comprovante de endereço)
+3. Aguarde aprovação (~2 dias úteis)
 
 ## 2️⃣ Obter Credenciais
 

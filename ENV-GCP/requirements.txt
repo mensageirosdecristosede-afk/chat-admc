@@ -1,4 +1,4 @@
 functions-framework
 requests
 google-cloud-secret-manager
-
+google-cloud-firestore
