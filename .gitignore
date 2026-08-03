@@ -37,3 +37,10 @@ override.tf.json
 terraform.rc
 ACESSOS-PRIVADO.md
 *.tfvars
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Imagens locais
+ENV-GCP/avatar-img/
